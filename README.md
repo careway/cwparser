@@ -1,23 +1,5 @@
 # Config Parser
 
-This is a config parser, not that much to say about this. 
-
-
-## Instructions to use
-
-```cpp
-
-ConfigParser parser;              // Declaration of parser
-parser.parse(argc[1]);            // Parse file
-    
-
-
-```
-
-
-
-# Config Parser
-
 A flexible C++ configuration parser that supports hierarchical structures, various data types, and intuitive access patterns.
 
 ## Features
