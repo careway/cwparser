@@ -5,138 +5,154 @@ A flexible C++ configuration parser that supports hierarchical structures, vario
 ## Features
 
 - Hierarchical configuration structure with nested nodes
-- Support for multiple data types (integers, floating-point, strings, vectors, tuples)
-- Hex number parsing support
-- Easy access using operator[]
-- Type-safe value retrieval
-- Vector and tuple parsing capabilities
+- Support for multiple data types:
+  - Basic types (int, double, string)
+  - Vectors (e.g., `[1.0, 2.0, 3.0]`)
+  - Space-separated tuples (e.g., `1 3.14 "hello"`)
+  - Hex numbers (e.g., `0xFF`)
+- Type-safe value retrieval using templates
+- Easy node access using operator[]
+- Optional value returns to handle missing data
+- Support for quoted strings
 
 ## Usage
 
 ### Basic Configuration File Format
 
-```yaml
+```ini
 [node_name]
-key1: value1
-key2: value2
+    key1: value1
+    key2: value2
+
 [parent_node]
     [child_node]
-    key3: value_int value_float "this is a string"
+        key3: value3
+        key4: "quoted string"
 ```
 
 ### Reading Configuration
 
 ```cpp
 ConfigParser config;
-config.parse("config.txt");
-
-// Access nodes using operator[]
-auto& node = config["node_name"];
-
-// Access nodes using nested operator[]
-auto& child = config["parent_node"]["child_node"];
-
-
-// Check if node exists
-if (node) {
-    // Node exists
+if (config.parse("config.txt")) {
+    // Access nodes using operator[]
+    auto& node = config["node_name"];
+    
+    // Access nested nodes
+    auto& child = config["parent_node"]["child_node"];
+    
+    // Check if node exists
+    if (node) {
+        // Node exists and can be used
+    }
 }
-
 ```
 
 ### Reading Different Types
 
 ```cpp
-// Basic types
-auto int_value = node.get<int>("key1"); // Returns std::optional<int>
-auto double_value = node.get<double>("key2"); // Returns std::optional<double>
-auto string_value = node.get<std::string>("key3"); // Returns std::optional<string>
+// Basic types with optional returns
+auto int_val = node.get<int>("int_key");
+auto double_val = node.get<double>("double_key");
+auto string_val = node.get<std::string>("string_key");
+
+if (int_val.has_value()) {
+    int value = *int_val;
+}
+
 // Hex numbers
 // In config: hex_value: 0xFF
-auto hex = node.get<int>("hex_value"); // Will parse as hexadecimal
+auto hex = node.get<int>("hex_value"); // Returns 255
+
 // Vector parsing
 // In config: vector_key: [1.0, 2.0, 3.0]
-auto vector = node.get<std::vector<double>>("vector_key");
-// Tuple parsing
-// In config: tuple_key: 1 3.14 hello
-auto tuple = node.get<std::tuple<int, double, std::string>>("tuple_key");
+auto vec = node.get<std::vector<double>>("vector_key");
 
+// Tuple parsing
+// In config: point: 100 200 300
+auto point = node.get<std::tuple<int, int, int>>("point");
+
+// Mixed type tuples
+// In config: mixed: 1 3.14 "hello"
+auto mixed = node.get<std::tuple<int, double, std::string>>("mixed");
 ```
 
-
-### Bulk Reading Tuples
+### Bulk Reading Properties
 
 ```cpp
-// Read all properties 
-using TupleType = std::tuple<int, double, std::string>;
-auto all_tuples = node.getAllLike<TupleType>();
-// Config format for bulk reading:
-// prop1: 1 2.5 hello
-// prop2: 2 3.7 world
-// Will return vector of tuples
-
+// Get all properties of a specific type
+auto all_points = node.getAll<std::tuple<int, int, int>>();
+// Returns std::unordered_map<std::string, tuple>
 ```
-  
-## Error Handling
-
-- The parser returns `std::optional` for all get operations
-- Node access returns a null node (checkable via boolean operator) if not found
-- File parsing returns bool indicating success/failure
 
 ## Example Configuration
 
-```yaml
+```ini
 [system]
-threads: 4
-memory_limit: 1024
-debug_mode: true
+    threads: 4
+    memory_limit: 1024
+    debug_mode: true
+    hex_value: 0xFF
+
 [graphics]
-resolution: [1920, 1080]
-refresh_rate: 60
-vsync: true
+    resolution: [1920, 1080]
+    refresh_rate: 60
+    vsync: true
+
 [network]
     [server]
-    host: localhost
-    port: 8080
-    max_connections: 100
-[coordinates]
-point1: 100 200 300 # Tuple format: x y z
-point2: 150 250 350
+        host: localhost
+        port: 8080
+        max_connections: 100
 
-``` 
-## Example Code
+[coordinates]
+    point1: 100 200 300
+    point2: 150 250 350
+```
+
+## Example Usage
 
 ```cpp
 ConfigParser config;
 if (config.parse("settings.cfg")) {
     // Read system settings
     if (auto threads = config["system"].get<int>("threads")) {
-        std::cout << "Threads: " << threads << "\n";
+        std::cout << "Threads: " << *threads << "\n";
     }
-    // Read resolution
+    
+    // Read graphics settings
     if (auto res = config["graphics"].get<std::vector<int>>("resolution")) {
-        std::cout << "Resolution: " << (res)[0] << "x" << (res)[1] << "\n";
+        std::cout << "Resolution: " << (*res)[0] << "x" << (*res)[1] << "\n";
     }
-    // Read coordinates as tuples
+    
+    // Read coordinates
     using Point3D = std::tuple<int, int, int>;
-    auto points = config["coordinates"].getAllLike<Point3D>();
-    for (const auto& point : points) {
-        auto [x, y, z] = point;
+    if (auto point = config["coordinates"].get<Point3D>("point1")) {
+        auto [x, y, z] = *point;
         std::cout << "Point: " << x << ", " << y << ", " << z << "\n";
     }
+    
+    // Bulk read all points
+    auto all_points = config["coordinates"].getAll<Point3D>();
+    for (const auto& [name, point] : all_points) {
+        auto [x, y, z] = point;
+        std::cout << name << ": " << x << ", " << y << ", " << z << "\n";
+    }
 }
+```
 
-``` 
+## Format Rules
+
+- Indentation must use 4 spaces per level
+- Node names are enclosed in square brackets: `[node_name]`
+- Properties use colon as separator: `key: value`
+- Vectors must be enclosed in square brackets and comma-separated: `[1, 2, 3]`
+- Tuples must be separated by spaces. (This will change to brackets and comma-sparated)
+- Strings can be quoted other wise they are space separated: `"Hello World"` or `Hello World`
+- Hex numbers start with 0x: `0xFF`
+- Comments start with '#' (must be on their own line)
 
 
-## Notes
-
-- Indentation in the config file must use spaces (4 spaces per level)
-- Comments start with '#'
-- Node names are enclosed in square brackets
-- Properties use colon ':' as separator
-- Vector values must be enclosed in square brackets
-- Tuple values must be space-separated
 
 ## Requirements
 

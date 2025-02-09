@@ -16,103 +16,152 @@
 
 namespace _config_parser
 {
-template <typename T>
-typename std::enable_if<std::is_integral<T>::value, T>::type
-get_from_string(std::string str)
-{
-	if(str[1] != 'x' && str[1] != 'X')
-		return std::stol(str);
-	else
-		return std::stol(str, nullptr, 16);
-}
-
-template <typename T>
-typename std::enable_if<std::is_floating_point<T>::value, T>::type
-get_from_string(std::string str)
-{
-	return std::stod(str);
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, std::string>::value, T>::type
-get_from_string(std::string str)
-{
-	return str;
-}
-
-template <typename T>
-typename std::enable_if<is_specialization_of<std::tuple, T>::value, T>::type
-get_from_string(const std::string& value)
-{
-
-	std::stringstream ss(value);
-	T tuple;
-	std::apply(
-		[&ss](auto&... args) {
-			std::string token;
-			((
-				 // Handle quoted strings
-				 [&]() {
-					 while(ss.peek() == ' ')
-						 ss.get();
-					 if(ss.peek() == '"')
-					 {
-						 ss.get(); // Skip opening quote
-						 std::getline(ss,
-									  token,
-									  '"'); // Read until closing quote
-						 if(ss.peek() == ' ')
-							 ss.get(); // Skip space after quote
-					 }
-					 else
-					 {
-						 ss >> token;
-					 }
-					 args = _config_parser::get_from_string<
-						 std::decay_t<decltype(args)>>(token);
-				 }()),
-			 ...);
-		},
-		tuple);
-
-	return tuple;
-}
-template <typename T>
-typename std::enable_if<is_specialization_of<std::vector, T>::value, T>::type
-get_from_string(const std::string& str)
-{
-	auto first = str.find("["), second = str.find("]");
-	if(first == std::string::npos || second == std::string::npos)
-		throw std::runtime_error(" Malformed [");
-	first += 1;
-	T ret;
-
-	while(true)
+	template <typename T>
+	typename std::enable_if<std::is_integral<T>::value, T>::type
+	get_from_string(std::string str)
 	{
-		size_t coma = str.find(",", first);
-		ret.emplace_back(std::stod(
-			str.substr(first, (coma == std::string::npos) ? second : coma)));
-		first = coma + 1;
-		if(coma == std::string::npos)
-			break;
+		if (str[1] != 'x' && str[1] != 'X')
+			return std::stol(str);
+		else
+			return std::stol(str, nullptr, 16);
 	}
 
-	return ret;
-};
+	template <typename T>
+	typename std::enable_if<std::is_floating_point<T>::value, T>::type
+	get_from_string(std::string str)
+	{
+		return std::stod(str);
+	}
 
-size_t countLeadingSpaces(const std::string& str)
-{
-	return str.find_first_not_of(" \t");
-}
+	template <typename T>
+	typename std::enable_if<std::is_same<T, std::string>::value, T>::type
+	get_from_string(std::string str)
+	{
+		auto first = str.find('"'), second = str.find('"', first + 1);
+		if (first != std::string::npos && second != std::string::npos)
+			return str.substr(first + 1, second - 1);
+		return str;
+	}
 
-std::string trim(const std::string& str)
-{
-	const auto start = str.find_first_not_of(" \t");
-	if(start == std::string::npos)
-		return "";
-	const auto end = str.find_last_not_of(" \t");
-	return str.substr(start, end - start + 1);
-}
+	template <typename T>
+	typename std::enable_if<is_specialization_of<std::tuple, T>::value, T>::type
+	get_from_string(const std::string &value)
+	{
+
+		std::stringstream ss(value);
+		T tuple;
+		std::apply(
+			[&ss](auto &...args)
+			{
+				std::string token;
+				((
+					 // Handle quoted strings
+					 [&]()
+					 {
+						 while (ss.peek() == ' ')
+							 ss.get();
+						 if (ss.peek() == '"')
+						 {
+							 ss.get(); // Skip opening quote
+							 std::getline(ss,
+										  token,
+										  '"'); // Read until closing quote
+							 if (ss.peek() == ' ')
+								 ss.get(); // Skip space after quote
+						 }
+						 else
+						 {
+							 ss >> token;
+						 }
+						 args = _config_parser::get_from_string<
+							 std::decay_t<decltype(args)>>(token);
+					 }()),
+				 ...);
+			},
+			tuple);
+
+		return tuple;
+	}
+
+	template <typename T>
+	typename std::enable_if<is_specialization_of<std::vector, T>::value && !is_specialization_of<std::vector, typename T::value_type>::value, T>::type
+	get_from_string(const std::string &str)
+	{
+		size_t first = str.find_first_of("["), second = str.find_last_of("]");
+		if (first == std::string::npos || second == std::string::npos)
+			throw std::runtime_error("Unmatched brackets");
+			
+		first += 1;
+		if (first == second)
+			return T{};
+
+		T ret;
+
+		while (true)
+		{
+			size_t coma = str.find(",", first);
+			ret.emplace_back(get_from_string<std::decay_t<typename T::value_type>>(
+				str.substr(first, (coma == std::string::npos) ? second : coma)));
+			first = coma + 1;
+			if (coma == std::string::npos)
+				break;
+		}
+
+		return ret;
+	};
+
+	template <typename T>
+	typename std::enable_if<is_specialization_of<std::vector, T>::value && is_specialization_of<std::vector, typename T::value_type>::value, T>::type
+	get_from_string(const std::string &str)
+	{
+
+		size_t first = str.find_first_of("["), second = str.size() - 1;
+		if (first == std::string::npos)
+			throw std::runtime_error("Error on format");
+
+		T ret;
+		size_t sub_first = first + 1, sub_second = sub_first;
+		for (size_t idx = first + 1, level = 1; idx < str.size() && level > 0; idx++)
+		{
+			switch (str[idx])
+			{
+			case '[':
+				level++;
+				if (level == 2)
+					sub_first = idx;
+				break;
+			case ']':
+				level--;
+				if (level == 1)
+				{
+					sub_second = idx;
+					ret.emplace_back(get_from_string<std::decay_t<typename T::value_type>>(
+						str.substr(sub_first, (sub_second - sub_first) + 1)));
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+		return ret;
+
+		return ret;
+	};
+
+	size_t countLeadingSpaces(const std::string &str)
+	{
+		return str.find_first_not_of(" \t");
+	}
+
+	std::string trim(const std::string &str)
+	{
+		const auto start = str.find_first_not_of(" \t");
+		if (start == std::string::npos)
+			return "";
+		const auto end = str.find_last_not_of(" \t");
+		return str.substr(start, end - start + 1);
+	}
 
 } // namespace _config_parser
 
@@ -121,18 +170,13 @@ class Node
 public:
 	std::map<std::string, std::string> properties;
 	std::map<std::string, std::shared_ptr<Node>> children;
-	static constexpr Node* end = nullptr;
+	static constexpr Node *end = nullptr;
 
 	template <typename T>
-	using is_vector = std::is_same<
-		T,
-		std::vector<typename T::value_type, typename T::allocator_type>>;
-
-	template <typename T>
-	std::optional<T> get(const std::string& key) const
+	std::optional<T> get(const std::string &key) const
 	{
 		auto it = properties.find(key);
-		if(it != properties.end())
+		if (it != properties.end())
 		{
 			return _config_parser::get_from_string<T>(it->second);
 		}
@@ -141,15 +185,15 @@ public:
 
 	template <typename T>
 	std::unordered_map<std::string, T>
-	getAllLike()
+	getAll()
 	{
-		if(properties.size() > 0)
+		if (properties.size() > 0)
 		{
 			std::string value;
 			std::unordered_map<std::string, T> result;
-			for(const auto& [key, value] : properties)
+			for (const auto &[key, value] : properties)
 			{
-				if(value.empty())
+				if (value.empty())
 					continue;
 				result.emplace(key, _config_parser::get_from_string<T>(value));
 			}
@@ -158,19 +202,19 @@ public:
 		return std::unordered_map<std::string, T>{};
 	}
 
-	void setValue(const std::string& key, const std::string& value)
+	void setValue(const std::string &key, const std::string &value)
 	{
 		properties[key] = value;
 	}
 
 	// Add operator[] for chained access
-	Node& operator[](const std::string_view& name)
+	Node &operator[](const std::string_view &name)
 	{
 		auto it = children.find(std::string(name));
 		return (it != children.end()) ? *it->second : *end;
 	}
 	// Overload for string literals
-	inline Node& operator[](const char* name)
+	inline Node &operator[](const char *name)
 	{
 		return operator[](std::string(name));
 	}
@@ -187,11 +231,11 @@ class ConfigParser
 public:
 	ConfigParser() = default;
 
-	bool parse(const std::string& filename)
+	bool parse(const std::string &filename)
 	{
 		nodes.clear();
 		std::ifstream file(filename);
-		if(!file.is_open())
+		if (!file.is_open())
 		{
 			std::cerr << "Failed to open file: " << filename << std::endl;
 			return false;
@@ -202,19 +246,19 @@ public:
 		auto current_node = std::make_shared<Node>();
 		nodes[""] = current_node;
 
-		while(std::getline(file, line))
+		while (std::getline(file, line))
 		{
 
 			// Count leading spaces to determine level
 			size_t indent = _config_parser::countLeadingSpaces(line);
 			line = _config_parser::trim(line);
 
-			if(line.empty() || line[0] == '#')
+			if (line.empty() || line[0] == '#')
 				continue;
 
 			// Parse key-value pairs
 			size_t delimiter = line.find(':');
-			if(delimiter != std::string::npos && !nodeStack.empty())
+			if (delimiter != std::string::npos && !nodeStack.empty())
 			{
 				std::string key =
 					_config_parser::trim(line.substr(0, delimiter));
@@ -224,18 +268,18 @@ public:
 				continue;
 			}
 			// Pop stack until we're at the right level
-			while(!nodeStack.empty() && nodeStack.size() > (indent / 4))
+			while (!nodeStack.empty() && nodeStack.size() > (indent / 4))
 			{
 				nodeStack.pop_back();
 			}
 
 			// Check for node header [nodeX]
-			if(line[0] == '[' && line.back() == ']')
+			if (line[0] == '[' && line.back() == ']')
 			{
 				std::string nodeName = line.substr(1, line.length() - 2);
 				auto newNode = std::make_shared<Node>();
 
-				if(nodeStack.empty())
+				if (nodeStack.empty())
 				{
 					// Root level node
 					nodes[nodeName] = newNode;
@@ -256,16 +300,16 @@ public:
 		return true;
 	}
 
-	Node& operator[](const std::string_view& nodePath)
+	Node &operator[](const std::string_view &nodePath)
 	{
 		auto it = nodes.find(std::string(nodePath));
-		if(it == nodes.end())
+		if (it == nodes.end())
 			return *Node::end;
 		return *(it->second.get());
 	}
 
 	// Overload for string literals
-	Node& operator[](const char* nodeName)
+	Node &operator[](const char *nodeName)
 	{
 		return operator[](std::string(nodeName));
 	}
@@ -274,7 +318,7 @@ private:
 	std::map<std::string, std::shared_ptr<Node>> nodes;
 
 	void
-	parseValue(Node& node, const std::string& key, const std::string& value)
+	parseValue(Node &node, const std::string &key, const std::string &value)
 	{
 		node.setValue(key, value);
 	}
