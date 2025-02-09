@@ -7,7 +7,7 @@ A flexible C++ configuration parser that supports hierarchical structures, vario
 - Hierarchical configuration structure with nested nodes
 - Support for multiple data types:
   - Basic types (int, double, string)
-  - Vectors (e.g., `[1.0, 2.0, 3.0]`)
+  - Multidimensional Vectors (e.g., `[1.0, 2.0, 3.0]`, `[[1,2]]`)
   - Space-separated tuples (e.g., `1 3.14 "hello"`)
   - Hex numbers (e.g., `0xFF`)
 - Type-safe value retrieval using templates
@@ -98,6 +98,7 @@ auto all_points = node.getAll<std::tuple<int, int, int>>();
     resolution: [1920, 1080]
     refresh_rate: 60
     vsync: true
+    2dvec : [[1,2],[3,4]]
 
 [network]
     [server]
@@ -123,6 +124,16 @@ if (config.parse("settings.cfg")) {
     // Read graphics settings
     if (auto res = config["graphics"].get<std::vector<int>>("resolution")) {
         std::cout << "Resolution: " << (*res)[0] << "x" << (*res)[1] << "\n";
+    }
+    
+    // Read 2d coordinates settings
+    if (auto res = config["graphics"].get<std::vector<std::vector<int>>>("2dvec")) {
+        for( auto idx0 = 0 ; idx0 < (*res).size(); idx0++ )
+        {    
+            for( auto idx1 = 0 ; idx1 < (*res)[idx0]; idx1++ )
+                std::cout << "[" << idx0 << " , " << idx1 << " ] ->" << (*res)[idx0][idx1]
+        
+        }
     }
     
     // Read coordinates

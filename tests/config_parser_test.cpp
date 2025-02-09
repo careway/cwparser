@@ -87,6 +87,7 @@ protected:
     hex_number: 0xAB
     vector_nums: [1.0, 2.0, 3.0, 4.0]
     2d_vector: [[1, 2], [3, 4], [5, 6]]
+    3d_vector: [[[3,4]],[[1,2]]]
     tuple_value: 1 3.14 "hello"
 
 [malformed]
@@ -210,6 +211,10 @@ public:
         success &= vec2d.has_value() && vec2d->size() == 3 && 
                   (*vec2d)[0].size() == 2 && (*vec2d)[0][0] == 1 && (*vec2d)[0][1] == 2;
 
+        auto vec3d = types.get<std::vector<std::vector<std::vector<int>>>>("3d_vector");
+        success &= vec3d.has_value() && vec3d->size() == 2 && 
+                  (*vec3d)[0].size() == 1 && (*vec3d)[0][0].size() == 2 &&(*vec3d)[0][0][0] == 3 && (*vec3d)[1][0][0] == 1;
+          
         using MixedTuple = std::tuple<int, double, std::string>;
         auto tuple = types.get<MixedTuple>("tuple_value");
         success &= tuple.has_value() &&
