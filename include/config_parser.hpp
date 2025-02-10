@@ -151,7 +151,15 @@ namespace _config_parser
 
 	size_t countLeadingSpaces(const std::string &str)
 	{
-		return str.find_first_not_of(" \t");
+		auto it = str.find_first_not_of(" \t");
+		size_t ret = 0;
+		if(it == std::string::npos)
+			it = str.size();
+		for(int i = 0; i < it ; i++)
+		{
+			ret += str[i] == '\t'? 4 : 1;
+		}
+		return ret;
 	}
 
 	std::string trim(const std::string &str)
