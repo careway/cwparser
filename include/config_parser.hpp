@@ -16,9 +16,14 @@
 
 namespace _config_parser
 {
+
+	/**
+	 *  Trivial types
+	 */
+
 	template <typename T>
 	typename std::enable_if<std::is_integral<T>::value, T>::type
-	get_from_string(std::string str)
+	inline get_from_string(std::string str)
 	{
 		if (str[1] != 'x' && str[1] != 'X')
 			return std::stol(str);
@@ -28,14 +33,14 @@ namespace _config_parser
 
 	template <typename T>
 	typename std::enable_if<std::is_floating_point<T>::value, T>::type
-	get_from_string(std::string str)
+	inline get_from_string(std::string str)
 	{
 		return std::stod(str);
 	}
 
 	template <typename T>
 	typename std::enable_if<std::is_same<T, std::string>::value, T>::type
-	get_from_string(std::string str)
+	inline get_from_string(std::string str)
 	{
 		auto first = str.find('"'), second = str.find('"', first + 1);
 		if (first != std::string::npos && second != std::string::npos)
@@ -43,49 +48,48 @@ namespace _config_parser
 		return str;
 	}
 
+	/**
+	 * @brief Parse string to tuple c++11 compatible
+	 */
+	template<typename Tuple, size_t Index = 0>
+	typename std::enable_if<Index == std::tuple_size<Tuple>::value, void>::type
+	parse_string_to_tuple(std::stringstream &ss, Tuple &tuple) {}
+
+	template<typename Tuple, size_t Index = 0>
+	typename std::enable_if<Index < std::tuple_size<Tuple>::value, void>::type
+	parse_string_to_tuple(std::stringstream &ss, Tuple &tuple) {
+		std::string token;
+		while (ss.peek() == ' ') ss.get();
+		if (ss.peek() == '"') {
+			ss.get(); // Skip opening quote
+			std::getline(ss, token, '"'); // Read until closing quote
+			if (ss.peek() == ' ') ss.get(); // Skip space after quote
+		} else {
+			ss >> token;
+		}
+		std::get<Index>(tuple) = _config_parser::get_from_string<typename std::decay<decltype(std::get<Index>(tuple))>::type>(token);
+		parse_string_to_tuple<Tuple, Index + 1>(ss, tuple);
+	}
+
 	template <typename T>
 	typename std::enable_if<is_specialization_of<std::tuple, T>::value, T>::type
-	get_from_string(const std::string &value)
+	inline get_from_string(const std::string &value)
 	{
 
 		std::stringstream ss(value);
 		T tuple;
-		std::apply(
-			[&ss](auto &...args)
-			{
-				std::string token;
-				((
-					 // Handle quoted strings
-					 [&]()
-					 {
-						 while (ss.peek() == ' ')
-							 ss.get();
-						 if (ss.peek() == '"')
-						 {
-							 ss.get(); // Skip opening quote
-							 std::getline(ss,
-										  token,
-										  '"'); // Read until closing quote
-							 if (ss.peek() == ' ')
-								 ss.get(); // Skip space after quote
-						 }
-						 else
-						 {
-							 ss >> token;
-						 }
-						 args = _config_parser::get_from_string<
-							 std::decay_t<decltype(args)>>(token);
-					 }()),
-				 ...);
-			},
-			tuple);
+	    parse_string_to_tuple(ss, tuple);
 
 		return tuple;
 	}
 
+
+	/**
+	 *  get_from_string recursive types
+	 */
 	template <typename T>
 	typename std::enable_if<is_specialization_of<std::vector, T>::value && !is_specialization_of<std::vector, typename T::value_type>::value, T>::type
-	get_from_string(const std::string &str)
+	inline get_from_string(const std::string &str)
 	{
 		size_t first = str.find_first_of("["), second = str.find_last_of("]");
 		if (first == std::string::npos || second == std::string::npos)
@@ -100,7 +104,7 @@ namespace _config_parser
 		while (true)
 		{
 			size_t coma = str.find(",", first);
-			ret.emplace_back(get_from_string<std::decay_t<typename T::value_type>>(
+			ret.emplace_back(get_from_string<typename std::decay<typename T::value_type>::type>(
 				str.substr(first, (coma == std::string::npos) ? second : coma)));
 			first = coma + 1;
 			if (coma == std::string::npos)
@@ -112,7 +116,7 @@ namespace _config_parser
 
 	template <typename T>
 	typename std::enable_if<is_specialization_of<std::vector, T>::value && is_specialization_of<std::vector, typename T::value_type>::value, T>::type
-	get_from_string(const std::string &str)
+	inline get_from_string(const std::string &str)
 	{
 
 		size_t first = str.find_first_of("["), second = str.size() - 1;
@@ -135,7 +139,7 @@ namespace _config_parser
 				if (level == 1)
 				{
 					sub_second = idx;
-					ret.emplace_back(get_from_string<std::decay_t<typename T::value_type>>(
+					ret.emplace_back(get_from_string<typename std::decay<typename T::value_type>::type>(
 						str.substr(sub_first, (sub_second - sub_first) + 1)));
 				}
 				break;
@@ -149,7 +153,10 @@ namespace _config_parser
 		return ret;
 	};
 
-	size_t countLeadingSpaces(const std::string &str)
+	/**
+	 * Tools
+	 */
+	size_t inline countLeadingSpaces(const std::string &str)
 	{
 		auto it = str.find_first_not_of(" \t");
 		size_t ret = 0;
@@ -162,7 +169,7 @@ namespace _config_parser
 		return ret;
 	}
 
-	std::string trim(const std::string &str)
+	std::string inline trim(const std::string &str)
 	{
 		const auto start = str.find_first_not_of(" \t");
 		if (start == std::string::npos)
@@ -173,22 +180,35 @@ namespace _config_parser
 
 } // namespace _config_parser
 
+#ifndef __cplusplus
+#elif __cplusplus > 201703L
+
+#include <optional>
+#else 
+#include "ctm_optional.hpp"
+#endif
+
 class Node
 {
+	#ifndef __cplusplus
+	#elif __cplusplus > 201703L
+	template<typename T>
+	using optional = std::optional<T>;
+	#endif
 public:
 	std::map<std::string, std::string> properties;
 	std::map<std::string, std::shared_ptr<Node>> children;
 	static constexpr Node *end = nullptr;
 
 	template <typename T>
-	std::optional<T> get(const std::string &key) const
+	optional<T> get(const std::string &key) const
 	{
 		auto it = properties.find(key);
 		if (it != properties.end())
 		{
 			return _config_parser::get_from_string<T>(it->second);
 		}
-		return std::optional<T>{};
+		return optional<T>{};
 	}
 
 	template <typename T>
@@ -199,8 +219,10 @@ public:
 		{
 			std::string value;
 			std::unordered_map<std::string, T> result;
-			for (const auto &[key, value] : properties)
+			for (const auto it : properties)
 			{
+				const auto &key = it.first;
+				const auto &value = it.second;
 				if (value.empty())
 					continue;
 				result.emplace(key, _config_parser::get_from_string<T>(value));
@@ -216,7 +238,7 @@ public:
 	}
 
 	// Add operator[] for chained access
-	Node &operator[](const std::string_view &name)
+	Node &operator[](const std::string &name)
 	{
 		auto it = children.find(std::string(name));
 		return (it != children.end()) ? *it->second : *end;
@@ -308,9 +330,9 @@ public:
 		return true;
 	}
 
-	Node &operator[](const std::string_view &nodePath)
+	Node &operator[](const std::string &nodePath)
 	{
-		auto it = nodes.find(std::string(nodePath));
+		auto it = nodes.find(nodePath);
 		if (it == nodes.end())
 			return *Node::end;
 		return *(it->second.get());

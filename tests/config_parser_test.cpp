@@ -104,14 +104,14 @@ protected:
     }
 
 public:
-    bool testParseFile() {
+    bool testBasicFileOperations() {
         setUp();
         bool result = parser.parse(test_file) && !parser.parse("nonexistent_file.txt");
         tearDown();
         return result;
     }
 
-    bool testSystemSettings() {
+    bool testIntegerAndBooleanParsing() {
         setUp();
         bool success = true;
         
@@ -129,7 +129,7 @@ public:
         return success;
     }
 
-    bool testGraphicsSettings() {
+    bool testVectorParsing() {
         setUp();
         bool success = true;
 
@@ -149,7 +149,7 @@ public:
         return success;
     }
 
-    bool testNetworkSettings() {
+    bool testNestedSectionParsing() {
         setUp();
         bool success = true;
 
@@ -167,7 +167,7 @@ public:
         return success;
     }
 
-    bool testCoordinates() {
+    bool testSpaceSeparatedTupleParsing() {
         setUp();
         bool success = true;
 
@@ -190,7 +190,7 @@ public:
         return success;
     }
 
-    bool testDataTypes() {
+    bool testComplexDataTypeParsing() {
         setUp();
         bool success = true;
 
@@ -226,7 +226,7 @@ public:
         return success;
     }
 
-    bool testErrorHandling() {
+    bool testInvalidKeyAccess() {
         setUp();
         bool success = true;
 
@@ -239,7 +239,7 @@ public:
         return success;
     }
 
-    bool testNodeTraversal() {
+    bool testNestedKeyTraversal() {
         setUp();
         bool success = true;
 
@@ -253,12 +253,11 @@ public:
         return success;
     }
 
-
-    bool testNodeMalformed(){
+    bool testMalformedInputHandling() {
         setUp();
         bool success = true;
 
-        success &=parser.parse(test_file);
+        success &= parser.parse(test_file);
         success &= bool(parser["malformed"].get<std::vector<std::vector<int>>>("empty"));
         try { 
             parser["malformed"].get<std::vector<int>>("missingbr");
@@ -273,19 +272,38 @@ public:
     }
 };
 
-int main() {
+int main(int argc, char **argv) {
     TestFramework framework;
     ConfigParserTest tests;
 
-    framework.addTest("Parse File", [&]() { return tests.testParseFile(); });
-    framework.addTest("System Settings", [&]() { return tests.testSystemSettings(); });
-    framework.addTest("Graphics Settings", [&]() { return tests.testGraphicsSettings(); });
-    framework.addTest("Network Settings", [&]() { return tests.testNetworkSettings(); });
-    framework.addTest("Coordinates", [&]() { return tests.testCoordinates(); });
-    framework.addTest("Data Types", [&]() { return tests.testDataTypes(); });
-    framework.addTest("Error Handling", [&]() { return tests.testErrorHandling(); });
-    framework.addTest("Node Traversal", [&]() { return tests.testNodeTraversal(); });
-    framework.addTest("Malformed", [&]() { return tests.testNodeMalformed(); });
+    std::string test_name;
+    bool all = false;
+
+    if(argc >= 2)
+        test_name = argv[1];
+    else 
+        all = true;
+
+    int result = 0;
+
+    if( test_name == "basic_file_operations" || all ) 
+    { framework.addTest("basic_file_operations", std::bind(&ConfigParserTest::testBasicFileOperations, &tests)); };
+    if( test_name == "integer_and_boolean_parsing" || all ) 
+    { framework.addTest("integer_and_boolean_parsing", std::bind(&ConfigParserTest::testIntegerAndBooleanParsing, &tests)); };
+    if( test_name == "vector_parsing" || all ) 
+    { framework.addTest("vector_parsing", std::bind(&ConfigParserTest::testVectorParsing, &tests)); };
+    if( test_name == "nested_section_parsing" || all ) 
+    { framework.addTest("nested_section_parsing", std::bind(&ConfigParserTest::testNestedSectionParsing, &tests)); };
+    if( test_name == "space_separated_tuple_parsing" || all ) 
+    { framework.addTest("space_separated_tuple_parsing", std::bind(&ConfigParserTest::testSpaceSeparatedTupleParsing, &tests)); };
+    if( test_name == "complex_data_type_parsing" || all ) 
+    { framework.addTest("complex_data_type_parsing", std::bind(&ConfigParserTest::testComplexDataTypeParsing, &tests)); };
+    if( test_name == "invalid_key_access" || all ) 
+    { framework.addTest("invalid_key_access", std::bind(&ConfigParserTest::testInvalidKeyAccess, &tests)); };
+    if( test_name == "nested_key_traversal" || all ) 
+    { framework.addTest("nested_key_traversal", std::bind(&ConfigParserTest::testNestedKeyTraversal, &tests)); };
+    if( test_name == "malformed_input_handling" || all ) 
+    { framework.addTest("malformed_input_handling", std::bind(&ConfigParserTest::testMalformedInputHandling, &tests)); };
 
     return framework.runTests() ? 0 : 1;
 } 

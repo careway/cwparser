@@ -15,13 +15,44 @@ add_executable(config_parser_test tests/config_parser_test.cpp)
 target_include_directories(config_parser_test PRIVATE include)
 
 # Add tests to CTest
-add_test(
-    NAME ConfigParserTests 
-    COMMAND config_parser_test
-)
+add_test(NAME BasicFileOperations 
+         COMMAND config_parser_test basic_file_operations)
 
-# Set test properties to parse the output
-set_tests_properties(ConfigParserTests PROPERTIES
-    PASS_REGULAR_EXPRESSION "Test Summary:.*Failed: 0"
-    FAIL_REGULAR_EXPRESSION "\\[FAIL\\]|\\[EXCEPTION\\]"
-) 
+add_test(NAME IntegerAndBooleanParsing 
+         COMMAND config_parser_test integer_and_boolean_parsing)
+
+add_test(NAME VectorParsing 
+         COMMAND config_parser_test vector_parsing)
+
+add_test(NAME NestedSectionParsing 
+         COMMAND config_parser_test nested_section_parsing)
+
+add_test(NAME SpaceSeparatedTupleParsing 
+         COMMAND config_parser_test space_separated_tuple_parsing)
+
+add_test(NAME ComplexDataTypeParsing 
+         COMMAND config_parser_test complex_data_type_parsing)
+
+add_test(NAME InvalidKeyAccess 
+         COMMAND config_parser_test invalid_key_access)
+
+add_test(NAME NestedKeyTraversal 
+         COMMAND config_parser_test nested_key_traversal)
+
+add_test(NAME MalformedInputHandling 
+         COMMAND config_parser_test malformed_input_handling)
+
+# Set test properties
+set_tests_properties(BasicFileOperations 
+                    IntegerAndBooleanParsing 
+                    VectorParsing 
+                    NestedSectionParsing 
+                    SpaceSeparatedTupleParsing 
+                    ComplexDataTypeParsing 
+                    InvalidKeyAccess 
+                    NestedKeyTraversal 
+                    MalformedInputHandling
+    PROPERTIES
+    ENVIRONMENT "TEST_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/tests"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
