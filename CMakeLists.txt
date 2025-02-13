@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(config_parser_test)
+project(cwparser)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -8,51 +8,62 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Enable testing
 enable_testing()
 
-# Add test executable
-add_executable(config_parser_test tests/config_parser_test.cpp)
 
-# Add include directories
-target_include_directories(config_parser_test PRIVATE include)
+add_library(cwparser INTERFACE)
+target_include_directories(cwparser INTERFACE 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
-# Add tests to CTest
-add_test(NAME BasicFileOperations 
-         COMMAND config_parser_test basic_file_operations)
+# Add tests subdirectory if testing is enabled
+option(BUILD_TESTING "Build tests" ON)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
-add_test(NAME IntegerAndBooleanParsing 
-         COMMAND config_parser_test integer_and_boolean_parsing)
+# Installation configuration
+install(DIRECTORY include/
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+                      PATTERN "*.hpp"
+)
 
-add_test(NAME VectorParsing 
-         COMMAND config_parser_test vector_parsing)
+# Generate and install export configuration
+include(CMakePackageConfigHelpers)
 
-add_test(NAME NestedSectionParsing 
-         COMMAND config_parser_test nested_section_parsing)
+# Write version file
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/cwparserConfigVersion.cmake"
+    VERSION 1.0.0
+    COMPATIBILITY SameMajorVersion
+)
 
-add_test(NAME SpaceSeparatedTupleParsing 
-         COMMAND config_parser_test space_separated_tuple_parsing)
+# Generate the config file that includes the exports
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cwparserConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cwparserConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/cwparser
+)
 
-add_test(NAME ComplexDataTypeParsing 
-         COMMAND config_parser_test complex_data_type_parsing)
+# Install the config files
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/cwparserConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cwparserConfigVersion.cmake"
+    DESTINATION lib/cmake/cwparser
+)
 
-add_test(NAME InvalidKeyAccess 
-         COMMAND config_parser_test invalid_key_access)
+# Export the targets at creation time
+install(TARGETS cwparser
+    EXPORT cwparserTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+)
 
-add_test(NAME NestedKeyTraversal 
-         COMMAND config_parser_test nested_key_traversal)
-
-add_test(NAME MalformedInputHandling 
-         COMMAND config_parser_test malformed_input_handling)
-
-# Set test properties
-set_tests_properties(BasicFileOperations 
-                    IntegerAndBooleanParsing 
-                    VectorParsing 
-                    NestedSectionParsing 
-                    SpaceSeparatedTupleParsing 
-                    ComplexDataTypeParsing 
-                    InvalidKeyAccess 
-                    NestedKeyTraversal 
-                    MalformedInputHandling
-    PROPERTIES
-    ENVIRONMENT "TEST_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/tests"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+# Then install the export
+install(EXPORT cwparserTargets
+    FILE cwparserTargets.cmake
+    NAMESPACE cwparser::
+    DESTINATION lib/cmake/cwparser
 )
