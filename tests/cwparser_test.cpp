@@ -52,9 +52,9 @@ public:
 };
 
 // Test fixture class
-class ConfigParserTest {
+class cwparser_test {
 protected:
-    ConfigParser parser;
+    cwparser::cwparser parser;
     const std::string test_file = "test_config.txt";
 
     void setUp() {
@@ -274,7 +274,7 @@ public:
 
 int main(int argc, char **argv) {
     TestFramework framework;
-    ConfigParserTest tests;
+    cwparser_test tests;
 
     std::string test_name;
     bool all = false;
@@ -287,23 +287,23 @@ int main(int argc, char **argv) {
     int result = 0;
 
     if( test_name == "basic_file_operations" || all ) 
-    { framework.addTest("basic_file_operations", std::bind(&ConfigParserTest::testBasicFileOperations, &tests)); };
+    { framework.addTest("basic_file_operations", std::bind(&cwparser_test::testBasicFileOperations, &tests)); };
     if( test_name == "integer_and_boolean_parsing" || all ) 
-    { framework.addTest("integer_and_boolean_parsing", std::bind(&ConfigParserTest::testIntegerAndBooleanParsing, &tests)); };
+    { framework.addTest("integer_and_boolean_parsing", std::bind(&cwparser_test::testIntegerAndBooleanParsing, &tests)); };
     if( test_name == "vector_parsing" || all ) 
-    { framework.addTest("vector_parsing", std::bind(&ConfigParserTest::testVectorParsing, &tests)); };
+    { framework.addTest("vector_parsing", std::bind(&cwparser_test::testVectorParsing, &tests)); };
     if( test_name == "nested_section_parsing" || all ) 
-    { framework.addTest("nested_section_parsing", std::bind(&ConfigParserTest::testNestedSectionParsing, &tests)); };
+    { framework.addTest("nested_section_parsing", std::bind(&cwparser_test::testNestedSectionParsing, &tests)); };
     if( test_name == "space_separated_tuple_parsing" || all ) 
-    { framework.addTest("space_separated_tuple_parsing", std::bind(&ConfigParserTest::testSpaceSeparatedTupleParsing, &tests)); };
+    { framework.addTest("space_separated_tuple_parsing", std::bind(&cwparser_test::testSpaceSeparatedTupleParsing, &tests)); };
     if( test_name == "complex_data_type_parsing" || all ) 
-    { framework.addTest("complex_data_type_parsing", std::bind(&ConfigParserTest::testComplexDataTypeParsing, &tests)); };
+    { framework.addTest("complex_data_type_parsing", std::bind(&cwparser_test::testComplexDataTypeParsing, &tests)); };
     if( test_name == "invalid_key_access" || all ) 
-    { framework.addTest("invalid_key_access", std::bind(&ConfigParserTest::testInvalidKeyAccess, &tests)); };
+    { framework.addTest("invalid_key_access", std::bind(&cwparser_test::testInvalidKeyAccess, &tests)); };
     if( test_name == "nested_key_traversal" || all ) 
-    { framework.addTest("nested_key_traversal", std::bind(&ConfigParserTest::testNestedKeyTraversal, &tests)); };
+    { framework.addTest("nested_key_traversal", std::bind(&cwparser_test::testNestedKeyTraversal, &tests)); };
     if( test_name == "malformed_input_handling" || all ) 
-    { framework.addTest("malformed_input_handling", std::bind(&ConfigParserTest::testMalformedInputHandling, &tests)); };
+    { framework.addTest("malformed_input_handling", std::bind(&cwparser_test::testMalformedInputHandling, &tests)); };
 
     return framework.runTests() ? 0 : 1;
 } 

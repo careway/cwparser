@@ -14,7 +14,9 @@
 
 #include "ctm_tt.hpp"
 
-namespace _config_parser
+namespace cwparser
+{
+namespace _
 {
 
 	/**
@@ -67,7 +69,7 @@ namespace _config_parser
 		} else {
 			ss >> token;
 		}
-		std::get<Index>(tuple) = _config_parser::get_from_string<typename std::decay<decltype(std::get<Index>(tuple))>::type>(token);
+		std::get<Index>(tuple) = _::get_from_string<typename std::decay<decltype(std::get<Index>(tuple))>::type>(token);
 		parse_string_to_tuple<Tuple, Index + 1>(ss, tuple);
 	}
 
@@ -178,7 +180,7 @@ namespace _config_parser
 		return str.substr(start, end - start + 1);
 	}
 
-} // namespace _config_parser
+} // namespace _
 
 #ifndef __cplusplus
 #elif __cplusplus > 201703L
@@ -206,7 +208,7 @@ public:
 		auto it = properties.find(key);
 		if (it != properties.end())
 		{
-			return _config_parser::get_from_string<T>(it->second);
+			return _::get_from_string<T>(it->second);
 		}
 		return optional<T>{};
 	}
@@ -225,7 +227,7 @@ public:
 				const auto &value = it.second;
 				if (value.empty())
 					continue;
-				result.emplace(key, _config_parser::get_from_string<T>(value));
+				result.emplace(key, _::get_from_string<T>(value));
 			}
 			return result;
 		}
@@ -256,10 +258,10 @@ public:
 	}
 };
 
-class ConfigParser
+class cwparser
 {
 public:
-	ConfigParser() = default;
+	cwparser() = default;
 
 	bool parse(const std::string &filename)
 	{
@@ -280,8 +282,8 @@ public:
 		{
 
 			// Count leading spaces to determine level
-			size_t indent = _config_parser::countLeadingSpaces(line);
-			line = _config_parser::trim(line);
+			size_t indent = _::countLeadingSpaces(line);
+			line = _::trim(line);
 
 			if (line.empty() || line[0] == '#')
 				continue;
@@ -291,9 +293,9 @@ public:
 			if (delimiter != std::string::npos && !nodeStack.empty())
 			{
 				std::string key =
-					_config_parser::trim(line.substr(0, delimiter));
+					_::trim(line.substr(0, delimiter));
 				std::string value =
-					_config_parser::trim(line.substr(delimiter + 1));
+					_::trim(line.substr(delimiter + 1));
 				parseValue(*current_node, key, value);
 				continue;
 			}
@@ -353,3 +355,4 @@ private:
 		node.setValue(key, value);
 	}
 };
+} // namespace cwparser
