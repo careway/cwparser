@@ -4,7 +4,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <optional>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -13,6 +12,15 @@
 #include <vector>
 
 #include "ctm_tt.hpp"
+
+#ifndef __cplusplus
+#elif __cplusplus > 201703L
+
+#include <optional>
+#else 
+#include "ctm_optional.hpp"
+#endif
+
 
 namespace cwparser
 {
@@ -181,36 +189,22 @@ namespace _
 	}
 
 } // namespace _
-
-#ifndef __cplusplus
-#elif __cplusplus > 201703L
-
-#include <optional>
-#else 
-#include "ctm_optional.hpp"
-#endif
-
 class Node
 {
-	#ifndef __cplusplus
-	#elif __cplusplus > 201703L
-	template<typename T>
-	using optional = std::optional<T>;
-	#endif
 public:
 	std::map<std::string, std::string> properties;
 	std::map<std::string, std::shared_ptr<Node>> children;
 	static constexpr Node *end = nullptr;
 
 	template <typename T>
-	optional<T> get(const std::string &key) const
+	std::optional<T> get(const std::string &key) const
 	{
 		auto it = properties.find(key);
 		if (it != properties.end())
 		{
 			return _::get_from_string<T>(it->second);
 		}
-		return optional<T>{};
+		return std::optional<T>{};
 	}
 
 	template <typename T>

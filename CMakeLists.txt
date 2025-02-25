@@ -6,8 +6,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Enable testing
-enable_testing()
-
+if ( ${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+    enable_testing()
+    option(BUILD_TESTING "Build tests" ON)
+else()
+    option(BUILD_TESTING "Build tests" OFF)
+endif()
 
 add_library(cwparser INTERFACE)
 add_library(cwparser::cwparser ALIAS cwparser)
@@ -17,7 +21,6 @@ target_include_directories(cwparser INTERFACE
 )
 
 # Add tests subdirectory if testing is enabled
-option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
