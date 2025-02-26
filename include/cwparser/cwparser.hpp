@@ -192,9 +192,12 @@ namespace _
 class Node
 {
 public:
+
+	Node():_error(true){};
+	Node( bool __error) :_error(__error){}
 	std::map<std::string, std::string> properties;
 	std::map<std::string, std::shared_ptr<Node>> children;
-	static constexpr Node *end = nullptr;
+	bool _error = true;
 
 	template <typename T>
 	std::optional<T> get(const std::string &key) const
@@ -237,7 +240,7 @@ public:
 	Node &operator[](const std::string &name)
 	{
 		auto it = children.find(std::string(name));
-		return (it != children.end()) ? *it->second : *end;
+		return (it != children.end()) ? *it->second : *(children.emplace(name,std::make_shared<Node>()).first->second);
 	}
 	// Overload for string literals
 	inline Node &operator[](const char *name)
@@ -248,7 +251,7 @@ public:
 	// Add bool operator for null checking
 	operator bool() const
 	{
-		return this != end;
+		return !this->_error;
 	}
 };
 
@@ -269,7 +272,7 @@ public:
 
 		std::string line;
 		std::vector<std::pair<std::string, std::shared_ptr<Node>>> nodeStack;
-		auto current_node = std::make_shared<Node>();
+		auto current_node = std::make_shared<Node>(false);
 		nodes[""] = current_node;
 
 		while (std::getline(file, line))
@@ -330,7 +333,7 @@ public:
 	{
 		auto it = nodes.find(nodePath);
 		if (it == nodes.end())
-			return *Node::end;
+			return (it != nodes.end()) ? *it->second : *(nodes.emplace(nodePath,std::make_shared<Node>()).first->second);
 		return *(it->second.get());
 	}
 
