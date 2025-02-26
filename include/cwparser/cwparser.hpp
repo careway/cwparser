@@ -14,7 +14,7 @@
 #include "ctm_tt.hpp"
 
 #ifndef __cplusplus
-#elif __cplusplus > 201703L
+#elif __cplusplus >= 201703L
 
 #include <optional>
 #else 
