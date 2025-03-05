@@ -298,7 +298,7 @@ public:
 			if (line[0] == '[' && line.back() == ']')
 			{
 				std::string nodeName = line.substr(1, line.length() - 2);
-				auto newNode = std::make_shared<Node>();
+				auto newNode = std::make_shared<Node>(false);
 
 				if (nodeStack.empty())
 				{
