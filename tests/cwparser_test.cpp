@@ -284,8 +284,6 @@ int main(int argc, char **argv) {
     else 
         all = true;
 
-    int result = 0;
-
     if( test_name == "basic_file_operations" || all ) 
     { framework.addTest("basic_file_operations", std::bind(&cwparser_test::testBasicFileOperations, &tests)); };
     if( test_name == "integer_and_boolean_parsing" || all ) 

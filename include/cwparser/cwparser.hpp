@@ -12,15 +12,7 @@
 #include <vector>
 
 #include "ctm_tt.hpp"
-
-#ifndef __cplusplus
-#elif __cplusplus >= 201703L
-
-#include <optional>
-#else 
 #include "ctm_optional.hpp"
-#endif
-
 
 namespace cwparser
 {
@@ -63,7 +55,7 @@ namespace _
 	 */
 	template<typename Tuple, size_t Index = 0>
 	typename std::enable_if<Index == std::tuple_size<Tuple>::value, void>::type
-	parse_string_to_tuple(std::stringstream &ss, Tuple &tuple) {}
+	parse_string_to_tuple(std::stringstream &, Tuple &) {}
 
 	template<typename Tuple, size_t Index = 0>
 	typename std::enable_if<Index < std::tuple_size<Tuple>::value, void>::type
@@ -129,7 +121,7 @@ namespace _
 	inline get_from_string(const std::string &str)
 	{
 
-		size_t first = str.find_first_of("["), second = str.size() - 1;
+		size_t first = str.find_first_of("[");
 		if (first == std::string::npos)
 			throw std::runtime_error("Error on format");
 
@@ -172,7 +164,7 @@ namespace _
 		size_t ret = 0;
 		if(it == std::string::npos)
 			it = str.size();
-		for(int i = 0; i < it ; i++)
+		for(size_t i = 0; i < it ; i++)
 		{
 			ret += str[i] == '\t'? 4 : 1;
 		}
@@ -218,7 +210,7 @@ public:
 		{
 			std::string value;
 			std::unordered_map<std::string, T> result;
-			for (const auto it : properties)
+			for (const auto &it : properties)
 			{
 				const auto &key = it.first;
 				const auto &value = it.second;
