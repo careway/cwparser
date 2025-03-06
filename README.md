@@ -1,6 +1,6 @@
 # cwparser
 
-A flexible C++ configuration parser that supports hierarchical structures, various data types, and intuitive access patterns. Mainly used for parsing configuration files.
+A flexible header-only C++ configuration parser that supports hierarchical structures, various data types, and intuitive access patterns. Mainly used for parsing configuration files.
 
 ## Features
 
