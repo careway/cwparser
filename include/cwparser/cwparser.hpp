@@ -74,7 +74,7 @@ namespace _
 	}
 
 	template <typename T>
-	typename std::enable_if<is_specialization_of<std::tuple, T>::value, T>::type
+	typename std::enable_if<has_get<T>::value, T>::type
 	inline get_from_string(const std::string &value)
 	{
 

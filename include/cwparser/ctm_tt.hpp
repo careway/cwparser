@@ -14,3 +14,13 @@ template <typename T>
 using is_vector = std::is_same< T, 
                   std::vector<typename T::value_type,
                   typename T::allocator_type>>;
+
+
+// Helper template to detect std::get
+template <typename T, typename = void>
+struct has_get : std::false_type {};
+
+template <typename T>
+struct has_get<T, std::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::true_type {};
+
+
