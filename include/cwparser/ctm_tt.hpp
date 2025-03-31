@@ -1,5 +1,8 @@
 #pragma once
 #include <type_traits>
+#if __cplusplus < 201703L
+#include <experimental/type_traits>
+#endif
 /**
  * Custom type traits implementation
  */
@@ -21,6 +24,10 @@ template <typename T, typename = void>
 struct has_get : std::false_type {};
 
 template <typename T>
+#if __cplusplus < 201703L
+struct has_get<T, std::experimental::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::true_type {};
+#else 
 struct has_get<T, std::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::true_type {};
 
+#endif
 
