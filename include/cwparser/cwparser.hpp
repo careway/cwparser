@@ -258,7 +258,7 @@ public:
 		std::ifstream file(filename);
 		if (!file.is_open())
 		{
-			std::cerr << "Failed to open file: " << filename << std::endl;
+			// std::cerr << "Failed to open file: " << filename << std::endl;
 			return false;
 		}
 
