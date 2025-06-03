@@ -6,7 +6,8 @@
 #include <optional>
 
 #else 
-
+#include <utility>
+#include <stdexcept>
 namespace std
 {
     template<typename T>
@@ -72,15 +73,56 @@ namespace std
             return *this;
         }
 
-        
-        operator T()
+        bool operator==(T&& other)
         {
             if(has_value_)
-                return value_;
+                return value_ == other;
             else
-                return T{};
+                return false;
         }
-    
+        bool operator!=(T&& other)
+        {
+            if(has_value_)
+                return value_ == other;
+            else
+                return false;
+        }
+        bool operator<(T&& other)
+        {
+            if(has_value_)
+                return value_ < other;
+            else
+                return false;
+        }
+        bool operator<=(T&& other)
+        {
+            if(has_value_)
+                return value_ <= other;
+            else
+                return false;
+        }
+
+        bool operator>(T&& other)
+        {
+            if(has_value_)
+                return value_ > other;
+            else
+                return false;
+
+        }
+        bool operator>=(T&& other)
+        {
+            if(has_value_)
+                return value_ >= other;
+            else
+                return false;
+
+        }
+
+        explicit operator bool() const{
+            return has_value_;
+        }
+        
         bool has_value() const {
             return has_value_;
         }

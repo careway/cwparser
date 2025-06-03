@@ -57,7 +57,8 @@ auto double_val = node.get<double>("double_key");
 auto string_val = node.get<std::string>("string_key");
 
 if (int_val.has_value()) {
-    int value = *int_val;
+    value = int_val.value();
+    value = *int_val;
 }
 
 // Hex numbers

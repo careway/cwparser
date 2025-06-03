@@ -142,9 +142,11 @@ public:
                   (*resolution)[0] == 1920 && 
                   (*resolution)[1] == 1080;
 
-        auto refresh = graphics.get<int>("refresh_rate");
-        success &= refresh.has_value() && *refresh == 60;
-
+        if(auto refresh = graphics.get<int>("refresh_rate")){
+                success &= refresh.has_value() && refresh == 60;
+        }else{
+            success &= false;
+        }
         tearDown();
         return success;
     }
