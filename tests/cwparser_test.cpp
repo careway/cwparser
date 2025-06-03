@@ -120,10 +120,10 @@ public:
         success &= bool(system);
 
         auto threads = system.get<int>("threads");
-        success &= threads.has_value() && *threads == 4;
+        success &= threads.has_value() && threads == 4;
 
         auto memory = system.get<int>("memory_limit");
-        success &= memory.has_value() && *memory == 1024;
+        success &= memory.has_value() && memory == 1024;
 
         tearDown();
         return success;
@@ -258,7 +258,7 @@ public:
         bool success = true;
 
         success &= parser.parse(test_file);
-        success &= bool(parser["malformed"].get<std::vector<std::vector<int>>>("empty"));
+        success &= parser["malformed"].get<std::vector<std::vector<int>>>("empty").has_value();
         try { 
             parser["malformed"].get<std::vector<int>>("missingbr");
             success &= false;

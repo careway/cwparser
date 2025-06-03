@@ -71,6 +71,15 @@ namespace std
             }
             return *this;
         }
+
+        
+        operator T()
+        {
+            if(has_value_)
+                return value_;
+            else
+                return T{};
+        }
     
         bool has_value() const {
             return has_value_;
@@ -94,10 +103,6 @@ namespace std
             has_value_ = false;
         }
     
-        operator bool()
-        {
-            return has_value_;
-        }
     
     private:
         bool has_value_;
