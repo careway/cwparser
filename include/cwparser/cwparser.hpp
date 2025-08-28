@@ -186,7 +186,7 @@ class Node
 public:
 
 	Node():_error(true){};
-	Node( bool __error) :_error(__error){}
+	explicit Node( bool __error) :_error(__error){}
 	std::map<std::string, std::string> properties;
 	std::map<std::string, std::shared_ptr<Node>> children;
 	bool _error = true;
@@ -249,8 +249,23 @@ public:
 
 class cwparser
 {
+friend Node;
 public:
 	cwparser() = default;
+
+	cwparser& operator=(Node node)
+	{
+		this->nodes = node.children;
+		return *this;
+	}
+
+	operator Node()
+	{
+		Node ret;
+		ret.children = this->nodes;
+		ret._error = false;
+		return ret;
+	}
 
 	bool parse(const std::string &filename)
 	{
