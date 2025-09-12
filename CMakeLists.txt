@@ -7,7 +7,7 @@ if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 # Enable testing
-if ( ${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     enable_testing()
     option(BUILD_TESTING "Build tests" ON)
 else()
@@ -16,7 +16,7 @@ endif()
 
 add_library(cwparser INTERFACE)
 add_library(cwparser::cwparser ALIAS cwparser)
-target_include_directories(cwparser INTERFACE 
+target_include_directories(cwparser INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -28,9 +28,8 @@ endif()
 
 # Installation configuration
 install(DIRECTORY include/
-        DESTINATION include
-        FILES_MATCHING PATTERN "*.h"
-                      PATTERN "*.hpp"
+    DESTINATION include
+    COMPONENT ${PROJECT_NAME}
 )
 
 # Generate and install export configuration
@@ -64,6 +63,7 @@ install(TARGETS cwparser
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
+    COMPONENT ${PROJECT_NAME}
 )
 
 # Then install the export
@@ -71,4 +71,5 @@ install(EXPORT cwparserTargets
     FILE cwparserTargets.cmake
     NAMESPACE cwparser::
     DESTINATION lib/cmake/cwparser
+    COMPONENT ${PROJECT_NAME}
 )
