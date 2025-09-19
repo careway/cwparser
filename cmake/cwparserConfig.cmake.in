@@ -1,6 +1,7 @@
 @PACKAGE_INIT@
+
 if (CMAKE_CXX_STANDARD LESS 14)
-  message(FATAL_ERROR "inta_protocols requires at least C++14. The current C++ standard is set to ${CMAKE_CXX_STANDARD}.")
+  message(FATAL_ERROR "cwparser requires at least C++14. The current C++ standard is set to ${CMAKE_CXX_STANDARD}.")
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/cwparserTargets.cmake")
 check_required_components(cwparser) 
