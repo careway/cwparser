@@ -1,11 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.25)
 project(cwparser)
 
 # Set C++ standard
-if(NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Enable testing
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     enable_testing()
@@ -94,11 +93,11 @@ add_custom_target( ${PROJECT_NAME}_version
  BYPRODUCTS  ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/version.h ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
 )
 
-# Library/Archive output directory
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  SOVERSION ${PROJECT_VERSION_MAJOR}
-)
+# # Library/Archive output directory
+# set_target_properties(${PROJECT_NAME} PROPERTIES
+#   VERSION ${PROJECT_VERSION}
+#   SOVERSION ${PROJECT_VERSION_MAJOR}
+# )
 
 
 
