@@ -23,10 +23,16 @@ using is_vector = std::is_same< T,
 template <typename T, typename = void>
 struct has_get : std::false_type {};
 
-template <typename T>
 #if __cplusplus < 201703L
-struct has_get<T, std::experimental::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::true_type {};
+
+namespace std
+{
+    template <class...> using void_t = void;
+}
+template <typename T>
+struct has_get<T, std::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::true_type {};
 #else 
+template <typename T>
 struct has_get<T, std::void_t<decltype(std::get<0>(std::declval<T>()))>> : std::true_type {};
 
 #endif
