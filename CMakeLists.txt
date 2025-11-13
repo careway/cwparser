@@ -95,8 +95,8 @@ add_custom_target( ${PROJECT_NAME}_version
 
 # # Library/Archive output directory
 # set_target_properties(${PROJECT_NAME} PROPERTIES
-#   VERSION ${PROJECT_VERSION}
-#   SOVERSION ${PROJECT_VERSION_MAJOR}
+#   VERSION ${${PROJECT_NAME}_VERSION}
+#   SOVERSION ${${PROJECT_NAME}_VERSION_MAJOR}
 # )
 
 
@@ -129,7 +129,7 @@ endif()
 
 # --- Basic Package Metadata ---
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VERSION "${${PROJECT_NAME}_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "cwparser for parsing with nodes and atributes.")
 set(CPACK_PACKAGE_VENDOR "cwparser")
 set(CPACK_PACKAGE_CONTACT "ctjimenez24@gmail.com")

@@ -28,9 +28,9 @@ namespace _
 	inline get_from_string(std::string str)
 	{
 		if (str[1] != 'x' && str[1] != 'X')
-			return std::stol(str);
+			return std::stoll(str);
 		else
-			return std::stol(str, nullptr, 16);
+			return std::stoll(str, nullptr, 16);
 	}
 
 	template <typename T>
