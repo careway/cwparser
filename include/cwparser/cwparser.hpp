@@ -37,7 +37,7 @@ namespace _
 	typename std::enable_if<std::is_floating_point<T>::value, T>::type
 	inline get_from_string(std::string str)
 	{
-		return std::stod(str);
+		return std::stold(str);
 	}
 
 	template <typename T>
