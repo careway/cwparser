@@ -9,7 +9,7 @@ function(parse_cache_variable_value file_path variable_name output_variable)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
         file(REAL_PATH "${file_path}" file_rp)
     else()
-        get_filename_component(file_rp "${file_path}" ABSOLUTE)
+        get_filename_component(file_rp "${file_path}" REALPATH)
     endif()
 
     file(STRINGS ${file_rp} file_content REGEX "^${variable_name}:[A-Z]+=(.*)$")
