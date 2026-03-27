@@ -63,6 +63,7 @@ protected:
     threads: 4
     memory_limit: 1024
     debug_mode: true
+    debug_mode_d: 1
     hex_value: 0xFF
 
 [graphics]
@@ -124,6 +125,12 @@ public:
 
         auto memory = system.get<int>("memory_limit");
         success &= memory.has_value() && memory == 1024;
+
+        auto debug = system.get<bool>("debug_mode");
+        success &= debug.has_value() && debug == true;
+
+        auto debug_d = system.get<bool>("debug_mode_d");
+        success &= debug_d.has_value() && debug_d == true;
 
         tearDown();
         return success;

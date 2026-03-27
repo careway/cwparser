@@ -24,7 +24,18 @@ namespace _
 	 */
 
 	template <typename T>
-	typename std::enable_if<std::is_integral<T>::value, T>::type
+	typename std::enable_if<std::is_same<T,bool>::value, T>::type
+	inline get_from_string(std::string str)
+	{
+		    // 2. Explicit checks
+		if (str == "true" || str == "1" || str == "yes" || str == "on") 
+			return true;
+		else
+			return false;
+	}
+
+	template <typename T>
+	typename std::enable_if<std::is_integral<T>::value && !std::is_same<T,bool>::value, T>::type
 	inline get_from_string(std::string str)
 	{
 		if (str[1] != 'x' && str[1] != 'X')
