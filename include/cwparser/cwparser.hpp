@@ -203,14 +203,14 @@ public:
 	bool _error = true;
 
 	template <typename T>
-	std::optional<T> get(const std::string &key) const
+	custom::optional<T> get(const std::string &key) const
 	{
 		auto it = properties.find(key);
 		if (it != properties.end())
 		{
 			return _::get_from_string<T>(it->second);
 		}
-		return std::optional<T>{};
+		return custom::optional<T>{};
 	}
 
 	template <typename T>
