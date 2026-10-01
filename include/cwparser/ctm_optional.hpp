@@ -22,7 +22,7 @@ namespace custom {
 
 // Intentar incluir la cabecera estándar por si se mezcla con código C++17 
 // o se usa la versión experimental de C++14 (<experimental/optional>)
-#if __has_include(<optional>)
+#if __has_include(<optional>) && (__cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L))
 #include <optional>
 #define CUSTOM_HAS_STD_OPTIONAL 1
 #endif
